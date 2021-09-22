@@ -26,28 +26,29 @@ export default {
   },
   methods: {
     onUsernameSelection(username) {
-      this.usernameAlreadySelected = true;
-      socket.auth = { username };
+      this.usernameAlreadySelected = true
+      localStorage.setItem("username", username)
       socket.connect();
     },
   },
   created() {
-    const sessionID = localStorage.getItem("sessionID");
+    const sessionID = localStorage.getItem("sessionID")
+    const username = localStorage.getItem("username")
 
     if (sessionID) {
       this.usernameAlreadySelected = true;
-      socket.auth = { sessionID };
+      socket.auth = { sessionID, username }
       socket.connect();
     }
 
-    socket.on("session", ({ sessionID, userID }) => {
-      // attach the session ID to the next reconnection attempts
-      socket.auth = { sessionID };
-      // store it in the localStorage
-      localStorage.setItem("sessionID", sessionID);
-      // save the ID of the user
-      socket.userID = userID;
-    });
+    // socket.on("session", ({ sessionID, userID }) => {
+    //   // attach the session ID to the next reconnection attempts
+    //   socket.auth = { sessionID };
+    //   // store it in the localStorage
+    //   localStorage.setItem("sessionID", sessionID);
+    //   // save the ID of the user
+    //   socket.userID = userID;
+    // });
 
     socket.on("connect_error", (err) => {
       if (err.message === "invalid username") {

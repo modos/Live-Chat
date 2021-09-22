@@ -1,6 +1,8 @@
 <template>
   <div class="user" @click="onClick" :class="{ selected: selected }">
     <div class="description">
+
+              <img class="avatar" v-bind:src="user.image" alt="" width="25px" height="25px"> 
       <div class="name">
         {{ user.username }} {{ user.self ? " (yourself)" : "" }}
       </div>
@@ -35,6 +37,11 @@ export default {
 </script>
 
 <style scoped>
+
+.avatar {
+   margin-right: 10px;
+}
+
 .selected {
   background-color: #1164a3;
 }
@@ -44,11 +51,12 @@ export default {
 }
 
 .description {
-  display: inline-block;
+  display: inline-flex;
 }
 
 .status {
   color: #92959e;
+  margin-left: 5px;
 }
 
 .new-messages {

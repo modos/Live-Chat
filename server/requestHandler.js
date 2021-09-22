@@ -2,7 +2,9 @@ const MongoClient = require('mongodb').MongoClient
 const config = require('./config.json')
 const crypto = require("crypto");
 const randomId = () => crypto.randomBytes(8).toString("hex")
-
+const formidable = require('formidable')
+const fs = require('fs')
+const serveHandler = require('serve-handler')
 module.exports = async function requestHandler(req, res) {
     
     const headers = {
@@ -16,6 +18,7 @@ module.exports = async function requestHandler(req, res) {
         res.end()
         return
       }
+
 
     const uri = `mongodb+srv://modos:${config.db.password}@chatnodesocket.mdxoy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
 
@@ -125,6 +128,48 @@ module.exports = async function requestHandler(req, res) {
         }
 
         })
-    }
+    }else if (req.url === '/uploadPhoto') {
+        let username = ''
+        let path = ''
+        const form = new formidable.IncomingForm()
+        form.parse(req, function (err, fields, files) {
+          username = fields.username
+          const oldpath = files.image.path
+          const newName = randomId() + files.image.name
+          const newpath = './uploads/' +  newName
+          path = newName
+          fs.rename(oldpath, newpath, async function (err) {
+            if (err) throw err
+            
+            res.writeHead(200, {
+                "Access-Control-Allow-Origin": "http://localhost:8080",
+                'Content-Type': 'application/json' })
+                res.write(JSON.stringify({
+                    message: 'uploaded successfully',
+                    image: "http://localhost:3000/uploads/" + newName
+                }))
 
+                
+            res.end()
+                        
+            try {
+                await client.db(config.db.name).collection('users').updateOne({
+                    username: username
+                }, {
+                    $set: {
+                        image: path
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+            })
+            
+        })
+    }else {
+
+        await serveHandler(req, res, {
+            renderSingle: true
+        })
+    }
 }

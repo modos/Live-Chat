@@ -1,9 +1,16 @@
 <template>
   <div>
     <div class="left-panel">
+
+  <form @submit.prevent="handleSubmit" method="post" enctype="multipart/form-data">
+      <input type="file" name="filetoupload" @change="uploadFile">
+      <input type="submit">
+  </form>
+
+
       <user
         v-for="user in users"
-        :key="user.userID"
+        :key="user.sessionID"
         :user="user"
         :selected="selectedUser === user"
         @select="onSelectUser(user)"
@@ -30,14 +37,37 @@ export default {
     return {
       selectedUser: null,
       users: [],
+      file: null
     };
   },
   methods: {
+    uploadFile (event) {
+        this.file = event.target.files[0]
+      },
+    async handleSubmit() {
+      const formData = new FormData()
+      formData.append('image', this.file)
+      formData.append('username', localStorage.getItem('username'))
+      const req = await fetch('http://localhost:3000/uploadPhoto' , {
+        method: 'POST',
+        body: formData
+      })
+
+  const data = await req.json()
+
+this.users.forEach((user) => {
+        if (user.self) {
+          user.connected = false
+          user.image = data.image
+        }
+      })
+
+    },
     onMessage(content) {
       if (this.selectedUser) {
         socket.emit("private message", {
           content,
-          to: this.selectedUser.userID,
+          to: this.selectedUser.sessionID,
         });
         this.selectedUser.messages.push({
           content,
@@ -74,17 +104,17 @@ export default {
     socket.on("users", (users) => {
       users.forEach((user) => {
         user.messages.forEach((message) => {
-          message.fromSelf = message.from === socket.userID;
+          message.fromSelf = message.from === socket.sessionID;
         });
         for (let i = 0; i < this.users.length; i++) {
           const existingUser = this.users[i];
-          if (existingUser.userID === user.userID) {
+          if (existingUser.sessionID === user.sessionID) {
             existingUser.connected = user.connected;
             existingUser.messages = user.messages;
             return;
           }
         }
-        user.self = user.userID === socket.userID;
+        user.self = user.sessionID === socket.sessionID;
         initReactiveProperties(user);
         this.users.push(user);
       });
@@ -100,7 +130,7 @@ export default {
     socket.on("user connected", (user) => {
       for (let i = 0; i < this.users.length; i++) {
         const existingUser = this.users[i];
-        if (existingUser.userID === user.userID) {
+        if (existingUser.sessionID === user.sessionID) {
           existingUser.connected = true;
           return;
         }
@@ -112,7 +142,7 @@ export default {
     socket.on("user disconnected", (id) => {
       for (let i = 0; i < this.users.length; i++) {
         const user = this.users[i];
-        if (user.userID === id) {
+        if (user.sessionID === id) {
           user.connected = false;
           break;
         }
@@ -122,8 +152,8 @@ export default {
     socket.on("private message", ({ content, from, to }) => {
       for (let i = 0; i < this.users.length; i++) {
         const user = this.users[i];
-        const fromSelf = socket.userID === from;
-        if (user.userID === (fromSelf ? to : from)) {
+        const fromSelf = socket.sessionID === from;
+        if (user.sessionID === (fromSelf ? to : from)) {
           user.messages.push({
             content,
             fromSelf,

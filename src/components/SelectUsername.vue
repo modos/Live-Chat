@@ -91,8 +91,9 @@ export default {
 
 
     if (res.ok){
-        localStorage.setItem('sessionID', data.sessionID)
-      this.$emit("input", this.username);
+      localStorage.setItem('sessionID', data.sessionID)
+      localStorage.setItem('username', this.username)
+      this.$emit("input", this.username)
     }else {
         this.error = "user does not exist or an internal error, try again"
       }
@@ -121,7 +122,7 @@ export default {
 
 
     if (res.ok){
-        localStorage.setItem('sessionID', data.sessionID)
+      localStorage.setItem('sessionID', data.sessionID)
       this.$emit("input", this.username);
     }else {
       if (data.message === "user has already existed") {
