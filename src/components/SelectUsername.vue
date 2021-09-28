@@ -140,10 +140,22 @@ export default {
     margin: 0%;
     padding: 0%;
     box-sizing: border-box;
+    
 }
 
-body {font-family: Arial, Helvetica, sans-serif;}
+body {
+  margin: 0px;
+  padding: 0px;
+}
 
+#app {
+  margin: 0px;
+  padding: 0px;
+}
+
+h1, p, label {
+  color: black;
+}
 #m-main {
     width: 100%;
     height: 100vh;
@@ -151,8 +163,14 @@ body {font-family: Arial, Helvetica, sans-serif;}
     justify-content: center;
     flex-flow: column;
     align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+     background-color: white;
+     margin: 0px;
 }
 
+.container {
+  background-color: white;
+}
 .form {
     width: 50%;
 }

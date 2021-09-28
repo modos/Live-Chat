@@ -1,8 +1,10 @@
 <template>
+   
+        <li class="clearfix li_button">
   <div class="user" @click="onClick" :class="{ selected: selected }">
     <div class="description">
 
-              <img class="avatar" v-bind:src="user.image" alt="" width="25px" height="25px"> 
+              <img class="avatar" v-bind:src="user.image" alt="" width="35px" height="35px"> 
       <div class="name">
         {{ user.username }} {{ user.self ? " (yourself)" : "" }}
       </div>
@@ -12,6 +14,8 @@
     </div>
     <div v-if="user.hasNewMessages" class="new-messages">!</div>
   </div>
+        </li>
+   
 </template>
 
 <script>
@@ -43,7 +47,7 @@ export default {
 }
 
 .selected {
-  background-color: #1164a3;
+  background-color: #bc3908;
 }
 
 .user {

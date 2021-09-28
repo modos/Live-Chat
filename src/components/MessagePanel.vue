@@ -1,36 +1,46 @@
 <template>
   <div>
     <div class="header">
-      <status-icon :connected="user.connected" />{{ user.username }}
-    </div>
-
-    <ul class="messages">
-      <li
+       <div class="chat-history">
+        <ul class="messages" v-if="user.messages.length !== 0">
+                <li
         v-for="(message, index) in user.messages"
         :key="index"
-        class="message"
+        class="message clearfix"
       >
-        <div v-if="displaySender(message, index)" class="sender">
-          {{ message.fromSelf ? "(yourself)" : user.username }}
-        </div>
-        {{ message.content }}
-      </li>
-    </ul>
 
-    <form @submit.prevent="onSubmit" class="form">
-      <textarea v-model="input" placeholder="Your message..." class="input" />
-      <button :disabled="!isValid" class="send-button">Send</button>
-    </form>
+      <div v-bind:class="{ is_self :  message.fromSelf }" class="my-message">
+        {{message.content}}
+      </div>
+       
+      </li>
+          
+        </ul>
+        
+      </div> <!-- end chat-history -->
+
+    </div>
+
+          <div class="chat-message clearfix">
+            <form @submit.prevent="onSubmit" class="form">
+        <textarea v-model="input" class="input" name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="3"></textarea>
+                
+        <i class="fa fa-file-o"></i> &nbsp;&nbsp;&nbsp;
+        <i class="fa fa-file-image-o"></i>
+        
+        <button :disabled="!isValid" class="send-button">Send</button>
+            </form>
+      </div>
+
   </div>
 </template>
 
 <script>
-import StatusIcon from "./StatusIcon";
 
 export default {
   name: "MessagePanel",
   components: {
-    StatusIcon,
+   
   },
   props: {
     user: Object,
@@ -61,13 +71,7 @@ export default {
 };
 </script>
 
-<style scoped>
-.header {
-  line-height: 40px;
-  padding: 10px 20px;
-  border-bottom: 1px solid #dddddd;
-}
-
+<style>
 .messages {
   margin: 0;
   padding: 20px;
@@ -76,26 +80,14 @@ export default {
 .message {
   list-style: none;
 }
-
-.sender {
-  font-weight: bold;
-  margin-top: 5px;
+.my-message {
+  background-color: #86BB71;
+    border-radius: 10px 0px 10px 10px;
+    padding: 16px;
+    height: max-content;
 }
 
-.form {
-  padding: 10px;
-}
-
-.input {
-  width: 80%;
-  resize: none;
-  padding: 10px;
-  line-height: 1.5;
-  border-radius: 5px;
-  border: 1px solid #000;
-}
-
-.send-button {
-  vertical-align: top;
+.is_self {
+  background-color: #5f5d57 !important;
 }
 </style>
