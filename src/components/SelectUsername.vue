@@ -52,6 +52,8 @@
 </template>
 
 <script>
+import socket from "../socket";
+
 export default {
   name: "SelectUsername",
   data() {
@@ -93,6 +95,8 @@ export default {
     if (res.ok){
       localStorage.setItem('sessionID', data.sessionID)
       localStorage.setItem('username', this.username)
+      socket.auth = { sessionID: data.sessionID, username: this.username }
+      socket.connect();
       this.$emit("input", this.username)
     }else {
         this.error = "user does not exist or an internal error, try again"
@@ -122,8 +126,11 @@ export default {
 
 
     if (res.ok){
-      localStorage.setItem('sessionID', data.sessionID)
-      this.$emit("input", this.username);
+           localStorage.setItem('sessionID', data.sessionID)
+      localStorage.setItem('username', this.username)
+      socket.auth = { sessionID: data.sessionID, username: this.username }
+      socket.connect();
+      this.$emit("input", this.username)
     }else {
       if (data.message === "user has already existed") {
         this.error = "user has already existed"

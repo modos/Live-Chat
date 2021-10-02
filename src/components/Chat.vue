@@ -25,25 +25,25 @@
     
     <div class="chat">
       <div class="chat-header clearfix">
-        <img v-bind:src="selectedUser.image" alt="avatar" width="50px" height="50px"/>
+        <img v-bind:src="selectedAvatar" alt="avatar" width="50px" height="50px"/>
         
         <div class="chat-about">
           <div class="chat-with">{{selectedUser.username}}</div>
           <div class="chat-num-messages">already {{selectedUser.messages.length}} messages</div>
         </div>
         <i class="fa fa-star"></i>
-      </div> <!-- end chat-header -->
+      </div>
           <message-panel
       v-if="selectedUser"
       :user="selectedUser"
       @input="onMessage"
       class="right-panel"
     />
- <!-- end chat-message -->
+
       
-    </div> <!-- end chat -->
+    </div> 
     
-  </div> <!-- end container -->
+  </div>
 
   </div>
 </template>
@@ -72,6 +72,11 @@ export default {
         this.file = event.target.files[0]
       },
     async handleSubmit() {
+
+      if (this.file === null) {
+        return
+      }
+
       const formData = new FormData()
       formData.append('image', this.file)
       formData.append('username', localStorage.getItem('username'))
@@ -84,7 +89,7 @@ export default {
 
 this.users.forEach((user) => {
         if (user.self) {
-          user.connected = false
+          user.connected = true
           user.image = data.image
         }
       })
@@ -107,7 +112,7 @@ this.users.forEach((user) => {
       user.hasNewMessages = false;
     },
   },
-  created() {
+  mounted() {
     socket.on("connect", () => {
       this.users.forEach((user) => {
         if (user.self) {
@@ -129,10 +134,16 @@ this.users.forEach((user) => {
     };
 
     socket.on("users", (users) => {
+
       users.forEach((user) => {
         user.messages.forEach((message) => {
-          message.fromSelf = message.from === socket.auth.sessionID;
+          message.fromSelf = message.from === localStorage.getItem("sessionID");
+
         });
+          user.self = user.sessionID === localStorage.getItem("sessionID");
+          initReactiveProperties(user);
+          this.users.push(user);
+          
         for (let i = 0; i < this.users.length; i++) {
           const existingUser = this.users[i];
           if (existingUser.sessionID === user.sessionID) {
@@ -141,11 +152,9 @@ this.users.forEach((user) => {
             return;
           }
         }
-        user.self = user.sessionID === socket.auth.sessionID;
-        initReactiveProperties(user);
-        this.users.push(user);
+        
       });
-      // put the current user first, and sort by username
+  
       this.users.sort((a, b) => {
         if (a.self) return -1;
         if (b.self) return 1;
@@ -165,6 +174,23 @@ this.users.forEach((user) => {
       initReactiveProperties(user);
       this.users.push(user);
     });
+
+    socket.on("user connected", (user) => {
+
+      let duplicated = false
+
+      this.users.forEach((item) => {
+        if (item.sessionID === user.sessionID) {
+          duplicated = true
+          return
+        }
+      })
+
+      if (!duplicated){
+
+        this.users.push(user)
+      }
+    })
 
     socket.on("user disconnected", (id) => {
       for (let i = 0; i < this.users.length; i++) {
@@ -202,6 +228,9 @@ this.users.forEach((user) => {
         }
         
       });
+    },
+    selectedAvatar() {
+      return this.selectedUser.image !== "http://localhost:3000/uploads/undefined" ? this.selectedUser.image : "http://localhost:8080/avatar.png"
     }
   },
   destroyed() {
@@ -422,10 +451,6 @@ this.users.forEach((user) => {
   content: " ";
   clear: both;
   height: 0;
-}
-
-.list {
-  /* overflow-y: scroll; */
 }
 
 .list li {

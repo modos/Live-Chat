@@ -38,9 +38,9 @@ export default {
     const username = localStorage.getItem("username")
 
     if (sessionID) {
-      this.usernameAlreadySelected = true;
       socket.auth = { sessionID, username }
       socket.connect();
+      this.usernameAlreadySelected = true;
     }
 
     socket.on("connect_error", (err) => {

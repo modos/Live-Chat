@@ -17,7 +17,7 @@
           
         </ul>
         
-      </div> <!-- end chat-history -->
+      </div> 
 
     </div>
 

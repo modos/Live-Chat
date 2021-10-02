@@ -17,7 +17,6 @@ const connect = async function() {
 }
 
 
-
 const findUserPhoto = async function(sessionID) {
     const client = await connect()
     let image = null
@@ -27,11 +26,36 @@ const findUserPhoto = async function(sessionID) {
         image = "null"
     }
 
-    console.log(image)
-
     return image
 }
 
+const existedUser = async function (client, username, email) {
+    return await client.db(config.db.name).collection('users').find({ $or: [ { username:  username }, { email: email } ] }).toArray()
+}
+
+const allUser = async function (client) {
+    return await client.db(config.db.name).collection('users').find({}).toArray()
+}
+
+const user = async function (client, username, password) {
+ return await client.db(config.db.name).collection('users').find({ $and: [ { username:  username }, { password: password } ] }).toArray()
+}
+
+const uploadAvatar = async function (client, username, path) {
+    await client.db(config.db.name).collection('users').updateOne({
+        username: username
+    }, {
+        $set: {
+            image: path
+        }
+    })
+}
+
 module.exports = {
-    findUserPhoto
+    findUserPhoto,
+    connect,
+    existedUser,
+    allUser,
+    user,
+    uploadAvatar
 }

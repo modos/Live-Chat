@@ -4,9 +4,9 @@
   <div class="user" @click="onClick" :class="{ selected: selected }">
     <div class="description">
 
-              <img class="avatar" v-bind:src="user.image" alt="" width="35px" height="35px"> 
+              <img class="avatar" v-bind:src="avatar" alt="" width="35px" height="35px"> 
       <div class="name">
-        {{ user.username }} {{ user.self ? " (yourself)" : "" }}
+        {{ user.username }} {{ user.self ? " (you)" : "" }}
       </div>
       <div class="status">
         <status-icon :connected="user.connected" />{{ status }}
@@ -36,6 +36,9 @@ export default {
     status() {
       return this.user.connected ? "online" : "offline";
     },
+    avatar() {
+      return this.user.image !== "http://localhost:3000/uploads/undefined" ? this.user.image : "http://localhost:8080/avatar.png"
+    }
   },
 };
 </script>

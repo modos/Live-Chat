@@ -1,10 +1,11 @@
-const MongoClient = require('mongodb').MongoClient
 const config = require('./config.json')
 const crypto = require("crypto");
 const randomId = () => crypto.randomBytes(8).toString("hex")
 const formidable = require('formidable')
 const fs = require('fs')
 const serveHandler = require('serve-handler')
+const db = require('./db')
+
 module.exports = async function requestHandler(req, res) {
     
     const headers = {
@@ -19,16 +20,7 @@ module.exports = async function requestHandler(req, res) {
         return
       }
 
-
-    const uri = `mongodb+srv://modos:${config.db.password}@chatnodesocket.mdxoy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
-
-    const client = new MongoClient(uri)
-
-    try {
-        await client.connect()
-    } catch (error) {
-        console.log(error)
-    }
+    const client = await db.connect()
 
 
     if (req.url === '/users' && req.method === 'POST') {
@@ -40,7 +32,7 @@ module.exports = async function requestHandler(req, res) {
         try {
             const data = JSON.parse(body)
             if (data.username && data.password && data.email) {
-                client.db(config.db.name).collection('users').find({ $or: [ { username:  data.username }, { email: data.email } ] }).toArray((err, result) => {
+                const result = db.existedUser(client, data.username, data.email)
 
                     if (!result.length > 0) {
 
@@ -65,7 +57,7 @@ module.exports = async function requestHandler(req, res) {
                         res.write(JSON.stringify({ message: 'user has already existed' }))
                         res.end()
                     }
-                })
+                
             }else {
                 res.writeHead(400, {
                     "Access-Control-Allow-Origin": "http://localhost:8080",
@@ -81,7 +73,7 @@ module.exports = async function requestHandler(req, res) {
 
 
     }else if (req.url === '/users' && req.method === 'GET') {
-        const data = await client.db(config.db.name).collection('users').find({}).toArray()
+        const data = db.allUser(client)
 
         res.writeHead(200, { 'Content-Type': 'application/json', 
         "Access-Control-Allow-Origin": "http://localhost:8080"
@@ -100,7 +92,7 @@ module.exports = async function requestHandler(req, res) {
 
             if (data.username && data.password) {
 
-                const r = await client.db(config.db.name).collection('users').find({ $and: [ { username:  data.username }, { password: data.password } ] }).toArray()
+                const r = await db.user(client, data.username, data.password)
 
                 if (r.length > 0) {
                     res.writeHead(200, {
@@ -153,13 +145,7 @@ module.exports = async function requestHandler(req, res) {
             res.end()
                         
             try {
-                await client.db(config.db.name).collection('users').updateOne({
-                    username: username
-                }, {
-                    $set: {
-                        image: path
-                    }
-                })
+                db.uploadAvatar(client, username, path)
             } catch (error) {
                 console.log(error)
             }
